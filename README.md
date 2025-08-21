@@ -16,12 +16,6 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 - Required libraries: `numpy`, `opencv-python`, `torch`, `scipy`
 - Pretrained SuperPoint weights file `superpoint_v1.pth`
 
-## Installation
-1. Clone the repository:
-   ```bash
-   git clone <your-repo-url>
-   cd superpoint-image-matching
-   ```
 
 ## DEMO OUTPUT
 #### Image of query_030.png from the queries folder: 
