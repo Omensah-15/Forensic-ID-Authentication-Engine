@@ -8,7 +8,6 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 - **Sub-millimeter Accuracy**: Detects micro-patterns as small as 0.0005mm
 - **Rotation Invariant**: Works from angles up to 60 degrees
 - **Lighting Robust**: Reliable performance in varying lighting conditions
-- **Real-time Processing**: <100ms recognition time per image
 - **no Training Required**: Uses pre-trained SuperPoint model
 
 ## Requirements
