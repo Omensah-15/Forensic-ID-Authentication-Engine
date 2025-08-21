@@ -10,3 +10,22 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 - **Lighting Robust**: Reliable performance in varying lighting conditions
 - **Real-time Processing**: <100ms recognition time per image
 - **Zero Training Required**: Uses pre-trained SuperPoint model
+
+## Requirements
+- Python 3.x
+- Required libraries: `numpy`, `opencv-python`, `torch`, `scipy`
+- Pretrained SuperPoint weights file `superpoint_v1.pth`
+
+## Installation
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   cd superpoint-image-matching
+   ```
+
+   ## DEMO OUTPUT
+   
+   A score of 1.000 indicates a near-perfect match (query_030.png and pattern_014.png).
+
+
+   
