@@ -9,7 +9,7 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 - **Rotation Invariant**: Works from angles up to 60 degrees
 - **Lighting Robust**: Reliable performance in varying lighting conditions
 - **Real-time Processing**: <100ms recognition time per image
-- **Zero Training Required**: Uses pre-trained SuperPoint model
+- **no Training Required**: Uses pre-trained SuperPoint model
 
 ## Requirements
 - Python 3.x
