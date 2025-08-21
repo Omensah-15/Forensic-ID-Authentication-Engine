@@ -24,8 +24,10 @@ The system scans query images, extracts nano-level keypoints, and compares them 
    ```
 
    ## DEMO OUTPUT
-
-
+   
+Image of query_030.png
+https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/5055cf5cd07158ef9015961ed9189ebf63c6a9f4/asset/pattern_014.png
+Image of pattern_014.png
 A score of 1.000 indicates a near-perfect match (query_030.png and pattern_014.png).
 
 https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/9ef8d762412fc8830cf38fc21126b41aec2eed90/asset/Screenshot%202025-08-21%20162010.png
