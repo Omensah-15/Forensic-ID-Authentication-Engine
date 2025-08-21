@@ -33,3 +33,8 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 ![image alt](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/9ef8d762412fc8830cf38fc21126b41aec2eed90/asset/Screenshot%202025-08-21%20162010.png)
 - The result image displays the SuperPoint image matching visualization between the query image (query_030.png) and the matched image (pattern_014.png). It features two overlaid grayscale images with numerous colored lines connecting corresponding keypoints, indicating successful feature matches. The lines, in various colors, span across the images, highlighting a dense set of matching points, with a perfect similarity score of 1.000, suggesting a highly accurate match.
    
+## 👨‍💻 Author
+
+**Obed Mensah**  
+*Data Scientist — Python | Power BI | SQL | Analytics*  
+📧 [heavenzlebron7@gmail.com](mailto:heavenzlebron7@gmail.com)
