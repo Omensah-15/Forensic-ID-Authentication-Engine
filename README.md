@@ -1,6 +1,7 @@
 # Image-Based Anti-Counterfeit Detection with SuperPoint
 
-A high-precision computer vision system for industrial pattern recognition with sub-millimeter accuracy and real-time performance.
+A computer vision project that leverages the SuperPoint deep learning model for feature detection and matching to verify the authenticity of product labels and security patterns.
+The system scans query images, extracts nano-level keypoints, and compares them against a trusted database to detect counterfeits.
 
 ## Features
 
