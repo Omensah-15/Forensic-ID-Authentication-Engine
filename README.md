@@ -17,6 +17,9 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 
 
 ## DEMO OUTPUT
+
+visit `notebook.ipynb` for more details
+
 #### Image query_030.png from the queries folder: 
 ![image alt](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/e2bba3fdf564d8adfc6a72358ddf824b31dc17e7/asset/query_030.png)
 
