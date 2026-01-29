@@ -10,12 +10,6 @@ The system scans query images, extracts nano-level keypoints, and compares them 
 - **Lighting Robust**: Reliable performance in varying lighting conditions
 - **no Training Required**: Uses pre-trained SuperPoint model
 
-## Requirements
-- Python 3.x
-- Required libraries: `numpy`, `opencv-python`, `torch`, `scipy`
-- Pretrained SuperPoint weights file `superpoint_v1.pth`
-
-
 ## DEMO OUTPUT
 
 visit [`notebook.ipynb`](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/aafee20046f3ec26850acc9f83f4d285b56b78ba/notebook.ipynb) for more details
