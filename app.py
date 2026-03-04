@@ -1,8 +1,5 @@
 """
-Forensic ID Authentication Engine — Streamlit Interface
-========================================================
-Place this file alongside script_v2.py and superpoint_v1.pth.
-Run:  streamlit run app.py
+Forensic ID Authentication Engine UI
 """
 
 import os
