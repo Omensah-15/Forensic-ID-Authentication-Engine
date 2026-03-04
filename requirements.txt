@@ -1,9 +1,54 @@
+# =============================================================================
+# Forensic ID Authentication Engine
+# requirements.txt
+# =============================================================================
+# Install all dependencies:
+#   pip install -r requirements.txt
+#
+# For GPU inference (optional — CPU works without this):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# =============================================================================
+
+
+# --- Core deep learning ---
+# SuperPointNet forward pass and tensor operations
 torch>=1.12.0
 torchvision>=0.13.0
-opencv-python>=4.5.0
+
+
+# --- Computer vision ---
+# opencv-python-headless is required for Streamlit Cloud and any server/container
+# environment. It is identical to opencv-python but excludes GUI display libraries
+# (libgtk, libgl) that are not present on headless hosts and cause ImportError.
+# Do NOT install opencv-python alongside this — they conflict.
+opencv-python-headless>=4.5.0
+
+
+# --- Numerical computing ---
 numpy>=1.22.0
+
+# Non-maximum suppression (maximum_filter used in keypoint extraction)
 scipy>=1.8.0
+
+
+# --- Web interface ---
 streamlit>=1.28.0
+
+
+# --- Image export ---
+# Heatmap PNG download in the Streamlit app
 Pillow>=9.0.0
+
+
+# --- Cryptographic log signing (optional) ---
+# Required for RSA-PSS and ECDSA dual-signature of audit logs (Layer 9).
+# The engine runs without this; signing is simply skipped.
+# Generate key pairs with: LogSigner.generate_keys("./keys")
 cryptography>=41.0.0
+
+
+# --- Confidence calibration (optional) ---
+# Required for ROC curve analysis and isotonic regression calibration (Layer 7).
+# The engine runs without this; default fixed thresholds are used instead.
+# Fit a calibrator with: FraudScoreCalibrator().fit(scores, labels)
 scikit-learn>=1.2.0
