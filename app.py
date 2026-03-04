@@ -1,5 +1,5 @@
 """
-Forensic ID Authentication Engine — Streamlit Interface
+Forensic ID Authentication Engine UI
 """
 
 import io
@@ -21,61 +21,430 @@ from PIL import Image, ImageDraw
 st.set_page_config(
     page_title="Forensic ID Authentication Engine",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="expanded"
 )
 
-# ── Theme configuration ───────────────────────────────────────────────────────
-if "theme" not in st.session_state:
-    st.session_state.theme = "dark"  # default theme
+# ──────────────────────────────────────────────
+#  GLOBAL STYLES — clean, theme-adaptive (like CreditIQ)
+# ──────────────────────────────────────────────
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
-def toggle_theme():
-    if st.session_state.theme == "dark":
-        st.session_state.theme = "light"
-    else:
-        st.session_state.theme = "dark"
+/* CSS variables that adapt to both light/dark themes */
+:root {
+    /* Base colors - will be overridden by Streamlit's theme */
+    --bg-primary: var(--background-color, #FFFFFF);
+    --bg-secondary: var(--secondary-background-color, #F7F8FA);
+    --text-primary: var(--text-color, #111827);
+    --text-secondary: var(--text-color, #4B5563);
+    --text-tertiary: #9CA3AF;
+    --border-light: rgba(128, 128, 128, 0.2);
+    --border-medium: rgba(128, 128, 128, 0.3);
+    
+    /* Accent colors - neutral professional palette */
+    --accent: #4B5563;
+    --accent-hover: #1F2937;
+    --accent-soft: rgba(75, 85, 99, 0.1);
+    --green: #059669;
+    --green-soft: rgba(5, 150, 105, 0.1);
+    --amber: #D97706;
+    --amber-soft: rgba(217, 119, 6, 0.1);
+    --red: #DC2626;
+    --red-soft: rgba(220, 38, 38, 0.1);
+    
+    /* Effects */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.04);
+    
+    /* Border radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+}
 
-# Theme colors
-def get_theme_colors():
-    if st.session_state.theme == "dark":
-        return {
-            "bg_primary": "#0a0e14",
-            "bg_secondary": "#05080c",
-            "bg_tertiary": "#040710",
-            "border": "#1e2a36",
-            "border_light": "#0f161e",
-            "text_primary": "#e6edf5",
-            "text_secondary": "#9aaec5",
-            "text_muted": "#4a6075",
-            "accent_success": "#10b981",
-            "accent_warning": "#f59e0b",
-            "accent_danger": "#ef4444",
-            "accent_info": "#3b82f6",
-            "bg_success": "rgba(16, 185, 129, 0.1)",
-            "bg_warning": "rgba(245, 158, 11, 0.1)",
-            "bg_danger": "rgba(239, 68, 68, 0.1)",
-            "bg_info": "rgba(59, 130, 246, 0.1)",
-        }
-    else:
-        return {
-            "bg_primary": "#f8fafc",
-            "bg_secondary": "#f1f5f9",
-            "bg_tertiary": "#ffffff",
-            "border": "#cbd5e1",
-            "border_light": "#e2e8f0",
-            "text_primary": "#0f172a",
-            "text_secondary": "#334155",
-            "text_muted": "#64748b",
-            "accent_success": "#059669",
-            "accent_warning": "#d97706",
-            "accent_danger": "#dc2626",
-            "accent_info": "#2563eb",
-            "bg_success": "rgba(5, 150, 105, 0.1)",
-            "bg_warning": "rgba(217, 119, 6, 0.1)",
-            "bg_danger": "rgba(220, 38, 38, 0.1)",
-            "bg_info": "rgba(37, 99, 235, 0.1)",
-        }
+/* Base typography */
+html, body, [class*="css"] {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif !important;
+}
 
-colors = get_theme_colors()
+/* Headings */
+h1 {
+    font-family: 'Playfair Display', Georgia, serif !important;
+    font-size: 2rem !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+}
+h2 { font-size: 1.15rem !important; font-weight: 600 !important; }
+h3 { font-size: 0.95rem !important; font-weight: 600 !important; }
+
+/* Labels */
+.stTextInput label, .stNumberInput label, .stSelectbox label,
+.stSlider label, .stRadio label {
+    font-size: 0.74rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.055em !important;
+    color: var(--text-secondary) !important;
+}
+
+/* Input fields */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input {
+    background: var(--bg-primary) !important;
+    border: 1.5px solid var(--border-medium) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-primary) !important;
+    font-size: 0.9rem !important;
+    transition: all 0.15s !important;
+}
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+/* Selectbox */
+.stSelectbox > div > div {
+    background: var(--bg-primary) !important;
+    border: 1.5px solid var(--border-medium) !important;
+    border-radius: var(--radius-sm) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Slider */
+.stSlider > div > div > div > div {
+    background: var(--accent) !important;
+}
+
+/* Radio pills - modern toggle style */
+.stRadio > div {
+    gap: 4px !important;
+    background: var(--bg-secondary) !important;
+    padding: 4px !important;
+    border-radius: 40px !important;
+    display: inline-flex !important;
+    border: 1px solid var(--border-light) !important;
+}
+.stRadio > div > label {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 40px !important;
+    padding: 5px 16px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    margin: 0 !important;
+}
+.stRadio > div > label:hover {
+    color: var(--accent) !important;
+}
+.stRadio > div > label[data-checked="true"] {
+    background: var(--accent) !important;
+    color: white !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+/* ── BUTTONS — clean, modern, like CreditIQ ── */
+.stButton > button,
+.stFormSubmitButton > button,
+.stDownloadButton > button {
+    font-family: 'IBM Plex Sans', sans-serif !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.62rem 1.8rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Primary button — neutral gradient */
+.stFormSubmitButton > button,
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, var(--accent), var(--accent-hover)) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3) !important;
+}
+.stFormSubmitButton > button:hover,
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(75, 85, 99, 0.4) !important;
+}
+.stFormSubmitButton > button:active,
+.stButton > button[kind="primary"]:active {
+    transform: translateY(0) !important;
+}
+
+/* Secondary button — glass morphism */
+.stButton > button {
+    background: rgba(128, 128, 128, 0.05) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-light) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+.stButton > button:hover {
+    background: rgba(128, 128, 128, 0.1) !important;
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow-md) !important;
+}
+
+/* Download button */
+.stDownloadButton > button {
+    background: transparent !important;
+    color: var(--text-primary) !important;
+    border: 1.5px dashed var(--border-medium) !important;
+    box-shadow: none !important;
+}
+.stDownloadButton > button:hover {
+    border-color: var(--accent) !important;
+    color: var(--accent) !important;
+    background: var(--accent-soft) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Metrics/KPI cards */
+[data-testid="stMetric"],
+.kpi-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 1.1rem 1.3rem !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s !important;
+}
+[data-testid="stMetric"]:hover,
+.kpi-card:hover {
+    border-color: var(--accent) !important;
+    box-shadow: var(--shadow-md) !important;
+    transform: translateY(-2px) !important;
+}
+[data-testid="stMetricLabel"] {
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.055em !important;
+    color: var(--text-tertiary) !important;
+}
+[data-testid="stMetricValue"] {
+    font-size: 1.85rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
+
+/* Alerts */
+.stSuccess { 
+    background: var(--green-soft) !important; 
+    border-left: 3px solid var(--green) !important; 
+    border-radius: var(--radius-sm) !important; 
+}
+.stError { 
+    background: var(--red-soft) !important; 
+    border-left: 3px solid var(--red) !important; 
+    border-radius: var(--radius-sm) !important; 
+}
+.stWarning { 
+    background: var(--amber-soft) !important; 
+    border-left: 3px solid var(--amber) !important; 
+    border-radius: var(--radius-sm) !important; 
+}
+
+/* Dividers */
+hr { 
+    border-color: var(--border-light) !important; 
+    margin: 1.8rem 0 !important; 
+}
+
+/* Utility classes */
+.kpi-label {
+    font-size: 0.7rem; 
+    font-weight: 600; 
+    text-transform: uppercase;
+    letter-spacing: 0.07em; 
+    color: var(--text-tertiary); 
+    margin-bottom: 0.4rem;
+}
+.kpi-value { 
+    font-size: 2rem; 
+    font-weight: 700; 
+    line-height: 1.1; 
+    color: var(--text-primary); 
+}
+.kpi-sub { 
+    font-size: 0.78rem; 
+    color: var(--text-tertiary); 
+    margin-top: 0.2rem; 
+}
+
+.section-eyebrow {
+    font-size: 0.7rem; 
+    font-weight: 600; 
+    text-transform: uppercase;
+    letter-spacing: 0.08em; 
+    color: var(--accent);
+    padding-bottom: 0.55rem; 
+    border-bottom: 1.5px solid var(--border-light); 
+    margin-bottom: 1.3rem;
+}
+
+/* Data rows */
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 0.85rem;
+}
+.data-row:last-child { border-bottom: none; }
+.data-key { color: var(--text-tertiary); }
+.data-value { color: var(--text-primary); font-weight: 500; }
+
+/* Hash block */
+.hash-block {
+    background: var(--bg-secondary); 
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm); 
+    padding: 14px 18px;
+}
+.hash-label {
+    font-size: 0.68rem; 
+    font-weight: 600; 
+    text-transform: uppercase;
+    letter-spacing: 0.07em; 
+    color: var(--text-tertiary); 
+    margin-bottom: 5px;
+}
+.hash-value {
+    font-family: 'IBM Plex Mono', monospace; 
+    font-size: 0.78rem;
+    color: var(--green); 
+    word-break: break-all;
+}
+
+/* Spoof bars */
+.sb-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+}
+.sb-lbl {
+    color: var(--text-tertiary);
+    width: 120px;
+    flex-shrink: 0;
+}
+.sb-bg {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    position: relative;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.sb-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+}
+.sb-val {
+    color: var(--text-secondary);
+    width: 50px;
+    text-align: right;
+    font-weight: 500;
+}
+
+/* Region table */
+.region-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.region-table th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid var(--border-light);
+    text-align: left;
+}
+.region-table td {
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-secondary);
+}
+.region-table tr:last-child td { border-bottom: none; }
+
+.status-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.status-verified {
+    color: var(--green);
+    background: var(--green-soft);
+    border: 1px solid var(--green);
+}
+.status-suspicious {
+    color: var(--amber);
+    background: var(--amber-soft);
+    border: 1px solid var(--amber);
+}
+.status-failed {
+    color: var(--red);
+    background: var(--red-soft);
+    border: 1px solid var(--red);
+}
+
+/* Chips */
+.chip {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    margin: 2px 4px 2px 0;
+    color: var(--amber);
+    background: var(--amber-soft);
+    border: 1px solid var(--amber);
+    border-radius: 4px;
+}
+
+/* File upload zone */
+[data-testid="stFileUploadDropzone"] {
+    background: var(--bg-secondary) !important;
+    border: 1px dashed var(--border-medium) !important;
+    border-radius: var(--radius-sm) !important;
+}
+[data-testid="stFileUploadDropzone"]:hover {
+    border-color: var(--accent) !important;
+}
+
+/* Expander */
+.streamlit-expanderHeader {
+    font-size: 0.85rem !important;
+    color: var(--text-primary) !important;
+    background: var(--bg-secondary) !important;
+    border-radius: var(--radius-sm) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ── Resolve root and add to sys.path so script_v2 is importable ──────────────
 ROOT = Path(__file__).parent.resolve()
@@ -101,482 +470,31 @@ DB_REPO     = ROOT / "database"          # committed database folder (if present
 DB_SESSION.mkdir(parents=True, exist_ok=True)
 Q_DIR.mkdir(parents=True, exist_ok=True)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CSS with dynamic theming
-# ─────────────────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-html, body, [class*="css"] {{
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: {colors["bg_primary"]};
-    color: {colors["text_primary"]};
-}}
-
-#MainMenu, footer, header {{ visibility: hidden; }}
-.block-container {{ padding: 2rem 2.5rem 5rem; max-width: 1440px; }}
-
-[data-testid="stSidebar"] {{
-    background: {colors["bg_secondary"]};
-    border-right: 1px solid {colors["border"]};
-}}
-
-[data-testid="stSidebar"] .block-container {{ padding: 1.5rem 1.2rem; }}
-
-/* masthead */
-.mh {{
-    display: flex;
-    align-items: center;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid {colors["border_light"]};
-    margin-bottom: 2rem;
-}}
-
-.mh-title {{
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: {colors["text_primary"]};
-    letter-spacing: -0.02em;
-}}
-
-.mh-sub {{
-    font-size: 0.7rem;
-    color: {colors["text_muted"]};
-    margin-top: 4px;
-}}
-
-.mh-pill {{
-    margin-left: auto;
-    font-size: 0.7rem;
-    padding: 4px 12px;
-    border: 1px solid {colors["border"]};
-    color: {colors["accent_info"]};
-    background: {colors["bg_info"]};
-    border-radius: 20px;
-}}
-
-/* verdict banners */
-.v-ok {{
-    background: {colors["bg_success"]};
-    border: 1px solid {colors["accent_success"]};
-    border-left: 4px solid {colors["accent_success"]};
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    border-radius: 8px;
-}}
-
-.v-med {{
-    background: {colors["bg_warning"]};
-    border: 1px solid {colors["accent_warning"]};
-    border-left: 4px solid {colors["accent_warning"]};
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    border-radius: 8px;
-}}
-
-.v-bad {{
-    background: {colors["bg_danger"]};
-    border: 1px solid {colors["accent_danger"]};
-    border-left: 4px solid {colors["accent_danger"]};
-    padding: 1.5rem 2rem;
-    margin-bottom: 2rem;
-    border-radius: 8px;
-}}
-
-.v-lbl {{
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: {colors["text_muted"]};
-    margin-bottom: 0.5rem;
-}}
-
-.v-h-ok {{ font-size: 2rem; font-weight: 700; color: {colors["accent_success"]}; }}
-.v-h-med {{ font-size: 2rem; font-weight: 700; color: {colors["accent_warning"]}; }}
-.v-h-bad {{ font-size: 2rem; font-weight: 700; color: {colors["accent_danger"]}; }}
-
-.v-meta {{
-    font-size: 0.85rem;
-    color: {colors["text_secondary"]};
-    margin-top: 0.5rem;
-}}
-
-/* score tiles */
-.tiles {{
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: {colors["border_light"]};
-    border: 1px solid {colors["border_light"]};
-    margin-bottom: 2rem;
-    border-radius: 8px;
-    overflow: hidden;
-}}
-
-.tile {{
-    background: {colors["bg_tertiary"]};
-    padding: 1.2rem 1.5rem;
-}}
-
-.tile-lbl {{
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: {colors["text_muted"]};
-    margin-bottom: 0.5rem;
-}}
-
-.tile-val {{
-    font-weight: 700;
-    font-size: 2rem;
-    line-height: 1.2;
-    color: {colors["text_primary"]};
-}}
-
-.tile-sub {{
-    font-size: 0.7rem;
-    color: {colors["text_muted"]};
-    margin-top: 0.3rem;
-}}
-
-/* section header */
-.sh {{
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: {colors["text_secondary"]};
-    padding: 0.5rem 0;
-    border-bottom: 1px solid {colors["border_light"]};
-    margin: 2rem 0 1rem;
-}}
-
-/* data rows */
-.dr {{
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid {colors["border_light"]};
-    font-size: 0.85rem;
-}}
-
-.dr:last-child {{ border-bottom: none; }}
-.dk {{ color: {colors["text_muted"]}; }}
-.dv {{ color: {colors["text_secondary"]}; font-weight: 500; }}
-
-/* spoof bars */
-.sb-row {{
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    font-size: 0.85rem;
-}}
-
-.sb-lbl {{
-    color: {colors["text_muted"]};
-    width: 120px;
-    flex-shrink: 0;
-}}
-
-.sb-bg {{
-    flex: 1;
-    height: 6px;
-    background: {colors["border_light"]};
-    position: relative;
-    border-radius: 3px;
-    overflow: hidden;
-}}
-
-.sb-fill {{
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    transition: width 0.3s ease;
-}}
-
-.sb-val {{
-    color: {colors["text_secondary"]};
-    width: 50px;
-    text-align: right;
-    font-weight: 500;
-}}
-
-/* region table */
-.rt {{
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-}}
-
-.rt th {{
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: {colors["text_muted"]};
-    padding: 0.6rem 0.8rem;
-    border-bottom: 1px solid {colors["border_light"]};
-    text-align: left;
-}}
-
-.rt td {{
-    padding: 0.7rem 0.8rem;
-    border-bottom: 1px solid {colors["border_light"]};
-    color: {colors["text_secondary"]};
-}}
-
-.rt tr:last-child td {{ border-bottom: none; }}
-
-.bv {{
-    color: {colors["accent_success"]};
-    background: {colors["bg_success"]};
-    border: 1px solid {colors["accent_success"]};
-}}
-
-.bs {{
-    color: {colors["accent_warning"]};
-    background: {colors["bg_warning"]};
-    border: 1px solid {colors["accent_warning"]};
-}}
-
-.bf {{
-    color: {colors["accent_danger"]};
-    background: {colors["bg_danger"]};
-    border: 1px solid {colors["accent_danger"]};
-}}
-
-.bdg {{
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 4px;
-}}
-
-/* chips */
-.chip {{
-    display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 500;
-    padding: 4px 10px;
-    margin: 2px 4px 2px 0;
-    color: {colors["accent_warning"]};
-    background: {colors["bg_warning"]};
-    border: 1px solid {colors["accent_warning"]};
-    border-radius: 4px;
-}}
-
-/* audit block */
-.ab {{
-    background: {colors["bg_secondary"]};
-    border: 1px solid {colors["border"]};
-    padding: 1.2rem 1.5rem;
-    font-size: 0.8rem;
-    line-height: 1.6;
-    word-break: break-all;
-    border-radius: 6px;
-}}
-
-.ak {{ color: {colors["text_muted"]}; }}
-.av {{ color: {colors["text_secondary"]}; }}
-.as {{ color: {colors["text_muted"]}; font-size: 0.7rem; }}
-
-/* step list */
-.step {{
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    padding: 0.4rem 0;
-    font-size: 0.85rem;
-}}
-
-.dot-done {{
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: {colors["accent_success"]};
-    flex-shrink: 0;
-}}
-
-.dot-live {{
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: {colors["accent_info"]};
-    flex-shrink: 0;
-    animation: blink 1s infinite;
-}}
-
-.dot-wait {{
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: {colors["border_light"]};
-    flex-shrink: 0;
-}}
-
-@keyframes blink {{ 0%,100%{{ opacity:1 }} 50%{{ opacity:0.3 }} }}
-
-/* match strip */
-.mstrip {{
-    display: flex;
-    gap: 2rem;
-    padding: 1rem 1.5rem;
-    background: {colors["bg_secondary"]};
-    border: 1px solid {colors["border"]};
-    margin-top: 0.5rem;
-    font-size: 0.85rem;
-    flex-wrap: wrap;
-    border-radius: 6px;
-}}
-
-.ms-k {{ color: {colors["text_muted"]}; }}
-.ms-v {{ font-weight: 600; color: {colors["text_primary"]}; }}
-
-/* db file list */
-.dbl {{
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.3rem 0;
-    font-size: 0.8rem;
-    color: {colors["text_secondary"]};
-    border-bottom: 1px solid {colors["border_light"]};
-}}
-
-.dbl:last-child {{ border-bottom: none; }}
-.dbl-dot {{
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: {colors["accent_info"]};
-    flex-shrink: 0;
-}}
-
-/* upload zone */
-[data-testid="stFileUploadDropzone"] {{
-    background: {colors["bg_secondary"]} !important;
-    border: 1px dashed {colors["border"]} !important;
-    border-radius: 6px !important;
-}}
-
-[data-testid="stFileUploadDropzone"]:hover {{
-    border-color: {colors["accent_info"]} !important;
-}}
-
-/* buttons */
-.stButton > button {{
-    font-family: 'Inter', sans-serif;
-    font-size: 0.8rem;
-    font-weight: 500;
-    background: {colors["bg_secondary"]};
-    border: 1px solid {colors["border"]};
-    color: {colors["text_primary"]};
-    padding: 0.5rem 1.2rem;
-    transition: all 0.2s;
-    border-radius: 6px;
-}}
-
-.stButton > button:hover {{
-    background: {colors["bg_info"]};
-    border-color: {colors["accent_info"]};
-    color: {colors["accent_info"]};
-}}
-
-.stButton > button[kind="primary"] {{
-    background: {colors["bg_info"]};
-    border-color: {colors["accent_info"]};
-    color: {colors["accent_info"]};
-}}
-
-/* form inputs */
-.stTextInput > div > div,
-.stSelectbox > div > div,
-.stNumberInput > div > div {{
-    background: {colors["bg_secondary"]} !important;
-    border: 1px solid {colors["border"]} !important;
-    border-radius: 6px !important;
-    color: {colors["text_primary"]} !important;
-}}
-
-.stTextInput input,
-.stSelectbox select,
-.stNumberInput input {{
-    color: {colors["text_primary"]} !important;
-}}
-
-.stCheckbox > label {{
-    font-size: 0.85rem;
-    color: {colors["text_secondary"]};
-}}
-
-.stExpander {{
-    border: 1px solid {colors["border"]} !important;
-    border-radius: 6px !important;
-    background: {colors["bg_secondary"]} !important;
-}}
-
-details summary p {{
-    font-size: 0.8rem !important;
-    color: {colors["text_primary"]} !important;
-}}
-
-/* theme toggle button */
-.theme-toggle {{
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 999;
-}}
-
-/* heatmap container */
-.heatmap-container {{
-    border: 1px solid {colors["border"]};
-    border-radius: 6px;
-    overflow: hidden;
-    background: {colors["bg_secondary"]};
-    padding: 1rem;
-}}
-
-/* color classes */
-.cg {{ color: {colors["accent_success"]}; }}
-.ca {{ color: {colors["accent_warning"]}; }}
-.cr {{ color: {colors["accent_danger"]}; }}
-.cb {{ color: {colors["accent_info"]}; }}
-.cd {{ color: {colors["text_muted"]}; }}
-</style>
-""", unsafe_allow_html=True)
-
-# Theme toggle button
-col1, col2, col3 = st.columns([1, 1, 8])
-with col1:
-    if st.button("🌙 Dark" if st.session_state.theme == "light" else "☀️ Light", 
-                 key="theme_toggle", help="Toggle theme"):
-        toggle_theme()
-        st.rerun()
+# ── Session state for results ─────────────────────────────────────────────────
+if "report" not in st.session_state:
+    st.session_state["report"] = None
+if "q_path" not in st.session_state:
+    st.session_state["q_path"] = None
+if "elapsed" not in st.session_state:
+    st.session_state["elapsed"] = None
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
 def pct_col(v: float) -> str:
-    return "cg" if v >= 75 else ("ca" if v >= 45 else "cr")
+    return "#059669" if v >= 75 else ("#D97706" if v >= 45 else "#DC2626")
 
 def bar_col(s: float) -> str:
-    return colors["accent_success"] if s < .25 else (colors["accent_warning"] if s < .55 else colors["accent_danger"])
+    return "#059669" if s < .25 else ("#D97706" if s < .55 else "#DC2626")
 
 def risk_classes(r: str):
-    return {
-        "LOW":    ("cg", "v-ok",  "v-h-ok"),
-        "MEDIUM": ("ca", "v-med", "v-h-med"),
-    }.get(r, ("cr", "v-bad", "v-h-bad"))
+    if r == "LOW":
+        return "#059669", "#059669"
+    elif r == "MEDIUM":
+        return "#D97706", "#D97706"
+    else:
+        return "#DC2626", "#DC2626"
 
 def verdict_text(r: str, fp: float):
     if r == "LOW":
@@ -592,15 +510,20 @@ def steps_html(active: int, steps: list) -> str:
     rows = ""
     for i, (lbl, tag) in enumerate(steps):
         if i < active:
-            dot, tc = "dot-done", "cg"
+            dot = '<div style="width:8px;height:8px;border-radius:50%;background:#059669;"></div>'
+            tc = "#059669"
         elif i == active:
-            dot, tc = "dot-live", "cb"
+            dot = '<div style="width:8px;height:8px;border-radius:50%;background:#4B5563;animation:blink 1s infinite;"></div>'
+            tc = "#4B5563"
         else:
-            dot, tc = "dot-wait", "cd"
-        rows += (f'<div class="step"><div class="{dot}"></div>'
-                 f'<span class="{tc}" style="min-width:70px">{tag}</span>'
-                 f'<span style="color:{colors["text_secondary"]}">{lbl}</span></div>')
-    return f'<div style="padding:.5rem 0">{rows}</div>'
+            dot = '<div style="width:8px;height:8px;border-radius:50%;background:var(--border-light);"></div>'
+            tc = "var(--text-tertiary)"
+        
+        rows += (f'<div style="display:flex;align-items:center;gap:0.8rem;padding:0.4rem 0;">{dot}'
+                 f'<span style="min-width:70px;color:{tc};">{tag}</span>'
+                 f'<span style="color:var(--text-secondary);">{lbl}</span></div>')
+    
+    return f'<div style="padding:0.5rem 0;">{rows}</div>'
 
 def write_upload(f, dest: Path) -> Path:
     dest.mkdir(parents=True, exist_ok=True)
@@ -637,7 +560,7 @@ def side_by_side(q: Path, m: Path) -> Image.Image:
     mi = mi.resize((int(mi.width * h / mi.height), h), Image.LANCZOS)
     gap   = 8
     total = qi.width + gap + mi.width
-    out   = Image.new("RGB", (total, h), colors["bg_secondary"])
+    out   = Image.new("RGB", (total, h), "#F7F8FA")
     out.paste(qi, (0, 0))
     out.paste(mi, (qi.width + gap, 0))
     return out
@@ -679,6 +602,7 @@ def generate_deviation_heatmap(query_img, reference_img):
     except Exception as e:
         print(f"Heatmap generation error: {e}")
         return None
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Engine loader — cached, only rebuilds when params change
@@ -725,19 +649,18 @@ def load_engine(weights: str, conf: float, nms: int,
 def sb_label(txt):
     st.markdown(
         f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-        f'color:{colors["text_muted"]};padding:0.8rem 0 0.35rem">{txt}</div>',
+        f'color:var(--text-tertiary);padding:0.8rem 0 0.35rem">{txt}</div>',
         unsafe_allow_html=True)
 
 with st.sidebar:
-    st.markdown(f"""
-    <div style="padding-bottom:1rem;border-bottom:1px solid {colors['border']}">
-        <div style="font-weight:700;font-size:1.2rem;color:{colors['text_primary']}">
-            Forensic ID Authentication Engine
-        </div>
-        <div style="font-size:0.7rem;color:{colors['text_muted']};margin-top:4px">
-            Advanced Document Verification System
-        </div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="margin-bottom:0.2rem;">
+        <span style="font-family:'Playfair Display',Georgia,serif;font-size:1.55rem;
+                     font-weight:600;">FIAE</span>
+    </div>
+    <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;
+                color:var(--text-tertiary);margin-bottom:2rem;">Forensic ID Authentication Engine</div>
+    """, unsafe_allow_html=True)
 
     sb_label("Engine Configuration")
     weights_input = st.text_input("Weights file", value="superpoint_v1.pth",
@@ -745,15 +668,15 @@ with st.sidebar:
                                    help="Path to SuperPoint weights file")
     
     if Path(weights_input).exists():
-        st.markdown(f'<div style="font-size:0.7rem;color:{colors["accent_success"]};margin-top:-0.4rem;margin-bottom:0.4rem">✓ Weights file found</div>', 
+        st.markdown(f'<div style="font-size:0.7rem;color:#059669;margin-top:-0.4rem;margin-bottom:0.4rem">✓ Weights file found</div>', 
                    unsafe_allow_html=True)
     else:
-        st.markdown(f'<div style="font-size:0.7rem;color:{colors["accent_danger"]};margin-top:-0.4rem;margin-bottom:0.4rem">✗ Weights file not found</div>', 
+        st.markdown(f'<div style="font-size:0.7rem;color:#DC2626;margin-top:-0.4rem;margin-bottom:0.4rem">✗ Weights file not found</div>', 
                    unsafe_allow_html=True)
 
     sb_label("Detection Parameters")
     conf_thresh     = st.slider("Keypoint confidence threshold", 0.001, 0.050, 0.003, 0.001, format="%.3f")
-    nms_dist        = st.slider("Non-maximum suppression distance (pixels)", 1, 8, 3)
+    nms_dist        = st.slider("Non-maximum suppression distance", 1, 8, 3)
     match_threshold = st.slider("Match threshold", 0.40, 0.99, 0.70, 0.01, format="%.2f")
     max_keypoints   = st.select_slider("Maximum keypoints",
                         options=[250, 500, 750, 1000, 1500, 2000], value=1000)
@@ -787,18 +710,19 @@ with st.sidebar:
 
     if db_imgs:
         items = "".join(
-            f'<div class="dbl"><div class="dbl-dot"></div>{p.name}</div>'
+            f'<div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0;border-bottom:1px solid var(--border-light);font-size:0.8rem;color:var(--text-secondary);">'
+            f'<div style="width:4px;height:4px;border-radius:50%;background:#4B5563;"></div>{p.name}</div>'
             for p in db_imgs[:25]
         )
-        extra = (f'<div style="font-size:0.7rem;color:{colors["text_muted"]};padding:0.25rem 0">'
+        extra = (f'<div style="font-size:0.7rem;color:var(--text-tertiary);padding:0.25rem 0">'
                  f'+ {len(db_imgs)-25} more</div>') if len(db_imgs) > 25 else ""
         st.markdown(
             f'<div style="margin-bottom:0.3rem">{items}{extra}</div>',
             unsafe_allow_html=True)
         st.markdown(
-            f'<div style="font-size:0.75rem;color:{colors["accent_success"]};margin-top:0.3rem">'
+            f'<div style="font-size:0.75rem;color:#059669;margin-top:0.3rem">'
             f'{len(db_imgs)} image{"s" if len(db_imgs)>1 else ""} loaded '
-            f'<span style="color:{colors["text_muted"]}">({source_label})</span></div>',
+            f'<span style="color:var(--text-tertiary)">({source_label})</span></div>',
             unsafe_allow_html=True)
 
         # Button to clear session uploads
@@ -808,29 +732,22 @@ with st.sidebar:
             st.rerun()
     else:
         st.markdown(
-            f'<div style="font-size:0.75rem;color:{colors["accent_warning"]};line-height:1.6">'
+            f'<div style="font-size:0.75rem;color:#D97706;line-height:1.6">'
             'No reference images loaded. Upload images above, or add them to the '
             '<code style="background:transparent">database/</code> folder.</div>',
             unsafe_allow_html=True)
 
     st.markdown(
-        f'<div style="margin-top:1.5rem;padding-top:0.9rem;border-top:1px solid {colors["border_light"]};'
-        f'font-size:0.7rem;color:{colors["text_muted"]}">v2.0 — Forensic Edition</div>',
+        f'<div style="margin-top:1.5rem;padding-top:0.9rem;border-top:1px solid var(--border-light);'
+        f'font-size:0.7rem;color:var(--text-tertiary);">{datetime.datetime.now().strftime("%d %b %Y, %H:%M")}</div>',
         unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Main content
 # ─────────────────────────────────────────────────────────────────────────────
-st.markdown(f"""
-<div class="mh">
-  <div>
-    <div class="mh-title">Forensic ID Authentication Engine</div>
-    <div class="mh-sub">SuperPoint Architecture • 10-Layer Verification Pipeline</div>
-  </div>
-  <div class="mh-pill">Production Ready</div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown("# Forensic ID Authentication Engine")
+st.markdown('<p style="color:var(--text-secondary);font-size:0.9rem;margin:-0.4rem 0 2rem;">SuperPoint Architecture • 10-Layer Verification Pipeline</p>', unsafe_allow_html=True)
 
 # ── Query upload ──────────────────────────────────────────────────────────────
 upload_col, layer_col = st.columns([1.8, 1], gap="large")
@@ -838,7 +755,7 @@ upload_col, layer_col = st.columns([1.8, 1], gap="large")
 with upload_col:
     st.markdown(
         f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-        f'color:{colors["text_muted"]};margin-bottom:0.5rem">Query Document</div>',
+        f'color:var(--text-tertiary);margin-bottom:0.5rem">Query Document</div>',
         unsafe_allow_html=True)
     query_file = st.file_uploader(
         "Upload query document for verification", 
@@ -848,18 +765,18 @@ with upload_col:
 
 with layer_col:
     st.markdown(f"""
-    <div style="background:{colors['bg_secondary']};padding:1rem;border-radius:6px;border:1px solid {colors['border']}">
-      <div style="font-weight:600;margin-bottom:0.5rem;color:{colors['text_primary']}">Verification Layers</div>
-      <div class="dr"><span class="dk">Layer 1</span><span class="dv">Descriptor Matching</span></div>
-      <div class="dr"><span class="dk">Layer 2</span><span class="dv">Geometric Consistency</span></div>
-      <div class="dr"><span class="dk">Layer 3</span><span class="dv">Tamper Localization</span></div>
-      <div class="dr"><span class="dk">Layer 4</span><span class="dv">Multi-Scale Analysis</span></div>
-      <div class="dr"><span class="dk">Layer 5</span><span class="dv">Region Verification</span></div>
-      <div class="dr"><span class="dk">Layer 6</span><span class="dv">Integrity Fingerprint</span></div>
-      <div class="dr"><span class="dk">Layer 7</span><span class="dv">Fraud Scoring</span></div>
-      <div class="dr"><span class="dk">Layer 8</span><span class="dv">Anti-Spoof Analysis</span></div>
-      <div class="dr"><span class="dk">Layer 9</span><span class="dv">Audit Log Generation</span></div>
-      <div class="dr"><span class="dk">Layer 10</span><span class="dv">Blockchain Hash</span></div>
+    <div style="background:var(--bg-secondary);padding:1rem;border-radius:6px;border:1px solid var(--border-light);">
+      <div style="font-weight:600;margin-bottom:0.5rem;color:var(--text-primary);">Verification Layers</div>
+      <div class="data-row"><span class="data-key">Layer 1</span><span class="data-value">Descriptor Matching</span></div>
+      <div class="data-row"><span class="data-key">Layer 2</span><span class="data-value">Geometric Consistency</span></div>
+      <div class="data-row"><span class="data-key">Layer 3</span><span class="data-value">Tamper Localization</span></div>
+      <div class="data-row"><span class="data-key">Layer 4</span><span class="data-value">Multi-Scale Analysis</span></div>
+      <div class="data-row"><span class="data-key">Layer 5</span><span class="data-value">Region Verification</span></div>
+      <div class="data-row"><span class="data-key">Layer 6</span><span class="data-value">Integrity Fingerprint</span></div>
+      <div class="data-row"><span class="data-key">Layer 7</span><span class="data-value">Fraud Scoring</span></div>
+      <div class="data-row"><span class="data-key">Layer 8</span><span class="data-value">Anti-Spoof Analysis</span></div>
+      <div class="data-row"><span class="data-key">Layer 9</span><span class="data-value">Audit Log Generation</span></div>
+      <div class="data-row"><span class="data-key">Layer 10</span><span class="data-value">Blockchain Hash</span></div>
     </div>""", unsafe_allow_html=True)
 
 # Query preview
@@ -869,7 +786,7 @@ if query_file:
     with c2:
         st.markdown(
             f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-            f'color:{colors["text_muted"]};margin:1rem 0 0.5rem">Query Preview</div>',
+            f'color:var(--text-tertiary);margin:1rem 0 0.5rem">Query Preview</div>',
             unsafe_allow_html=True)
         st.image(raw, use_container_width=True)
 
@@ -888,23 +805,20 @@ with btn_c:
 with hint_c:
     if not weights_ok:
         st.markdown(
-            f'<div style="font-size:0.8rem;color:{colors["accent_danger"]};padding-top:0.5rem">'
+            f'<div style="font-size:0.8rem;color:#DC2626;padding-top:0.5rem">'
             f'Weights file not found: {weights_path}</div>', unsafe_allow_html=True)
     elif not db_imgs:
         st.markdown(
-            f'<div style="font-size:0.8rem;color:{colors["accent_warning"]};padding-top:0.5rem">'
+            f'<div style="font-size:0.8rem;color:#D97706;padding-top:0.5rem">'
             'No reference images. Upload images in the database section.</div>',
             unsafe_allow_html=True)
     elif not query_file:
         st.markdown(
-            f'<div style="font-size:0.8rem;color:{colors["text_muted"]};padding-top:0.5rem">'
+            f'<div style="font-size:0.8rem;color:var(--text-tertiary);padding-top:0.5rem">'
             'Upload a query document to begin verification.</div>',
             unsafe_allow_html=True)
 
-st.markdown(
-    f'<div style="height:1px;background:{colors["border_light"]};margin:1.5rem 0 2rem"></div>',
-    unsafe_allow_html=True)
-
+st.markdown("---")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Run pipeline
@@ -970,66 +884,81 @@ if run_btn and can_run:
     prog.empty()
 
     # Persist to session state
-    st.session_state["report"]  = report
-    st.session_state["q_path"]  = q_path
+    st.session_state["report"] = report
+    st.session_state["q_path"] = q_path
     st.session_state["elapsed"] = elapsed
-    st.rerun()  # force clean render of results without the progress list
+    st.rerun()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Results
 # ─────────────────────────────────────────────────────────────────────────────
-if "report" in st.session_state:
-    rep     = st.session_state["report"]
-    q_path  = st.session_state["q_path"]
+if st.session_state["report"] is not None:
+    rep = st.session_state["report"]
+    q_path = st.session_state["q_path"]
     elapsed = st.session_state["elapsed"]
 
-    risk     = rep.risk_level.value
-    fraud_p  = rep.fraud_probability * 100
-    auth_p   = rep.authenticity_score * 100
+    risk = rep.risk_level.value
+    fraud_p = rep.fraud_probability * 100
+    auth_p = rep.authenticity_score * 100
     desc_sim = rep.descriptor_similarity
 
-    c_cls, v_cls, h_cls = risk_classes(risk)
+    c_color, _ = risk_classes(risk)
     v_title, v_sub = verdict_text(risk, fraud_p)
 
     # Verdict banner
+    bg_color = "#05966910" if risk == "LOW" else "#D9770610" if risk == "MEDIUM" else "#DC262610"
+    border_color = "#059669" if risk == "LOW" else "#D97706" if risk == "MEDIUM" else "#DC2626"
+    
     st.markdown(f"""
-    <div class="{v_cls}">
-      <div class="v-lbl">Verification Result | Session {rep.session_id}</div>
-      <div class="{h_cls}">{v_title}</div>
-      <div class="v-meta">{v_sub} — Processed in {elapsed:.2f} seconds</div>
+    <div style="background:{bg_color};border:1px solid {border_color};border-left:4px solid {border_color};
+                padding:1.5rem 2rem;margin-bottom:2rem;border-radius:8px;">
+        <div style="font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;
+                    color:var(--text-tertiary);margin-bottom:0.5rem;">Verification Result | Session {rep.session_id}</div>
+        <div style="font-size:2rem;font-weight:700;color:{border_color};">{v_title}</div>
+        <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.5rem;">{v_sub} — Processed in {elapsed:.2f} seconds</div>
     </div>""", unsafe_allow_html=True)
 
     # Score tiles
-    geo_p   = rep.geometric.inlier_ratio * 100 if rep.geometric else 0.0
+    geo_p = rep.geometric.inlier_ratio * 100 if rep.geometric else 0.0
     spoof_p = rep.anti_spoof.overall_spoof_probability * 100 if rep.anti_spoof else 0.0
 
-    st.markdown(f"""
-    <div class="tiles">
-      <div class="tile">
-        <div class="tile-lbl">Authenticity Score</div>
-        <div class="tile-val">{auth_p:.1f}%</div>
-        <div class="tile-sub">Composite weighted score</div>
-      </div>
-      <div class="tile">
-        <div class="tile-lbl">Fraud Probability</div>
-        <div class="tile-val">{fraud_p:.1f}%</div>
-        <div class="tile-sub">Calibrated estimate</div>
-      </div>
-      <div class="tile">
-        <div class="tile-lbl">Geometric Inliers</div>
-        <div class="tile-val">{geo_p:.1f}%</div>
-        <div class="tile-sub">RANSAC homography</div>
-      </div>
-      <div class="tile">
-        <div class="tile-lbl">Spoof Probability</div>
-        <div class="tile-val">{spoof_p:.1f}%</div>
-        <div class="tile-sub">Anti-spoof analysis</div>
-      </div>
-    </div>""", unsafe_allow_html=True)
+    t1, t2, t3, t4 = st.columns(4, gap="medium")
+    
+    with t1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Authenticity Score</div>
+            <div class="kpi-value" style="color:{pct_col(auth_p)};">{auth_p:.1f}%</div>
+            <div class="kpi-sub">Composite weighted score</div>
+        </div>""", unsafe_allow_html=True)
+    
+    with t2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Fraud Probability</div>
+            <div class="kpi-value" style="color:{pct_col(100-fraud_p)};">{fraud_p:.1f}%</div>
+            <div class="kpi-sub">Calibrated estimate</div>
+        </div>""", unsafe_allow_html=True)
+    
+    with t3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Geometric Inliers</div>
+            <div class="kpi-value" style="color:{pct_col(geo_p)};">{geo_p:.1f}%</div>
+            <div class="kpi-sub">RANSAC homography</div>
+        </div>""", unsafe_allow_html=True)
+    
+    with t4:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Spoof Probability</div>
+            <div class="kpi-value" style="color:{pct_col(100-spoof_p)};">{spoof_p:.1f}%</div>
+            <div class="kpi-sub">Anti-spoof analysis</div>
+        </div>""", unsafe_allow_html=True)
 
-    # ── MATCH VISUALISATION — front and centre ────────────────────────────
-    st.markdown('<div class="sh">Match Visualization</div>', unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown('<div class="section-eyebrow">Match Visualization</div>', unsafe_allow_html=True)
 
     if rep.best_match_path and Path(rep.best_match_path).exists():
         match_path = Path(rep.best_match_path)
@@ -1039,21 +968,21 @@ if "report" in st.session_state:
         with col_q:
             st.markdown(
                 f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-                f'color:{colors["text_muted"]};margin-bottom:0.5rem">Query Document</div>',
+                f'color:var(--text-tertiary);margin-bottom:0.5rem">Query Document</div>',
                 unsafe_allow_html=True)
             st.image(str(q_path), use_container_width=True)
 
         with col_m:
             st.markdown(
                 f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-                f'color:{colors["text_muted"]};margin-bottom:0.5rem">Best Match — {match_name}</div>',
+                f'color:var(--text-tertiary);margin-bottom:0.5rem">Best Match — {match_name}</div>',
                 unsafe_allow_html=True)
             st.image(str(match_path), use_container_width=True)
 
         # Side-by-side composite
         st.markdown(
             f'<div style="font-size:0.7rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;'
-            f'color:{colors["text_muted"]};margin:1rem 0 0.5rem">Side-by-Side Comparison</div>',
+            f'color:var(--text-tertiary);margin:1rem 0 0.5rem">Side-by-Side Comparison</div>',
             unsafe_allow_html=True)
         try:
             combo = side_by_side(q_path, match_path)
@@ -1063,24 +992,22 @@ if "report" in st.session_state:
 
         # Score strip
         st.markdown(f"""
-        <div class="mstrip">
-          <span class="ms-k">Matched to:</span>
-          <span class="ms-v">{match_name}</span>
-          <span class="ms-k" style="margin-left:auto">Similarity:</span>
-          <span class="ms-v {pct_col(desc_sim*100)}">{desc_sim:.4f}</span>
-          <span class="ms-k">Inliers:</span>
-          <span class="ms-v {pct_col(geo_p)}">{geo_p:.1f}%</span>
-          <span class="ms-k">Risk Level:</span>
-          <span class="ms-v {c_cls}">{risk}</span>
+        <div style="display:flex;gap:2rem;padding:1rem 1.5rem;background:var(--bg-secondary);border:1px solid var(--border-light);margin-top:0.5rem;font-size:0.85rem;border-radius:6px;">
+          <span style="color:var(--text-tertiary);">Matched to:</span>
+          <span style="font-weight:600;color:var(--text-primary);">{match_name}</span>
+          <span style="color:var(--text-tertiary);margin-left:auto;">Similarity:</span>
+          <span style="font-weight:600;color:{pct_col(desc_sim*100)};">{desc_sim:.4f}</span>
+          <span style="color:var(--text-tertiary);">Inliers:</span>
+          <span style="font-weight:600;color:{pct_col(geo_p)};">{geo_p:.1f}%</span>
+          <span style="color:var(--text-tertiary);">Risk Level:</span>
+          <span style="font-weight:600;color:{c_color};">{risk}</span>
         </div>""", unsafe_allow_html=True)
 
     else:
         st.markdown(f"""
-        <div style="padding:3rem 2rem;border:1px dashed {colors['border']};border-radius:6px;text-align:center">
-          <div style="font-size:1rem;color:{colors['accent_warning']};margin-bottom:0.5rem">
-            No Match Found in Database
-          </div>
-          <div style="font-size:0.8rem;color:{colors['text_muted']};line-height:1.6">
+        <div style="padding:3rem 2rem;border:1px dashed var(--border-light);border-radius:6px;text-align:center">
+          <div style="font-size:1rem;color:#D97706;margin-bottom:0.5rem">No Match Found in Database</div>
+          <div style="font-size:0.8rem;color:var(--text-tertiary);line-height:1.6">
             The query image did not meet the match threshold against any reference image.
             Try lowering the match threshold or adding more reference images.
           </div>
@@ -1088,7 +1015,7 @@ if "report" in st.session_state:
 
     # ── Tamper heatmap ────────────────────────────────────────────────────
     if CV2_OK and rep.best_match_path and Path(rep.best_match_path).exists():
-        st.markdown('<div class="sh">Tamper Detection Heatmap</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-eyebrow">Tamper Detection Heatmap</div>', unsafe_allow_html=True)
         
         # Generate heatmap
         heatmap = generate_deviation_heatmap(q_path, rep.best_match_path)
@@ -1096,93 +1023,92 @@ if "report" in st.session_state:
         if heatmap is not None:
             hc1, hc2 = st.columns([2, 1], gap="large")
             with hc1:
-                st.markdown('<div class="heatmap-container">', unsafe_allow_html=True)
+                st.markdown(f'<div style="border:1px solid var(--border-light);border-radius:6px;overflow:hidden;background:var(--bg-secondary);padding:1rem;">', unsafe_allow_html=True)
                 st.image(heatmap, use_container_width=True, caption="Deviation Heatmap (Red = High Deviation)")
                 st.markdown('</div>', unsafe_allow_html=True)
             with hc2:
                 st.markdown(f"""
-                <div style="background:{colors['bg_secondary']};padding:1.5rem;border-radius:6px;border:1px solid {colors['border']}">
-                  <div style="font-weight:600;margin-bottom:1rem;color:{colors['text_primary']}">Analysis</div>
-                  <div class="dr"><span class="dk">Heatmap Generated</span><span class="dv">✓</span></div>
-                  <div class="dr"><span class="dk">Method</span><span class="dv">Structural Deviation</span></div>
-                  <div class="dr"><span class="dk">Color Scale</span><span class="dv">Blue (Low) → Red (High)</span></div>
+                <div style="background:var(--bg-secondary);padding:1.5rem;border-radius:6px;border:1px solid var(--border-light);">
+                  <div style="font-weight:600;margin-bottom:1rem;color:var(--text-primary);">Analysis</div>
+                  <div class="data-row"><span class="data-key">Heatmap Generated</span><span class="data-value">✓</span></div>
+                  <div class="data-row"><span class="data-key">Method</span><span class="data-value">Structural Deviation</span></div>
+                  <div class="data-row"><span class="data-key">Color Scale</span><span class="data-value">Blue → Red</span></div>
                 </div>
                 """, unsafe_allow_html=True)
                 
                 if rep.tamper and rep.tamper.suspicious_quadrants:
                     chips = "".join(
-                        f'<span class="chip" style="background:{colors["bg_danger"]};color:{colors["accent_danger"]}">{z}</span>' 
-                        for z in rep.tamper.suspicious_quadrants)
+                        f'<span class="chip">{z}</span>' for z in rep.tamper.suspicious_quadrants)
                     st.markdown(
-                        f'<div style="margin-top:1rem"><div style="font-weight:600;margin-bottom:0.5rem;color:{colors["text_primary"]}">Flagged Zones</div>{chips}</div>',
+                        f'<div style="margin-top:1rem"><div style="font-weight:600;margin-bottom:0.5rem;color:var(--text-primary);">Flagged Zones</div>{chips}</div>',
                         unsafe_allow_html=True)
                 else:
                     st.markdown(
-                        f'<div style="margin-top:1rem;padding:0.75rem;background:{colors["bg_success"]};border:1px solid {colors["accent_success"]};border-radius:4px;color:{colors["accent_success"]};font-size:0.8rem">No suspicious zones detected</div>',
+                        f'<div style="margin-top:1rem;padding:0.75rem;background:var(--green-soft);border:1px solid #059669;border-radius:4px;color:#059669;font-size:0.8rem">No suspicious zones detected</div>',
                         unsafe_allow_html=True)
         else:
             st.markdown(
-                f'<div style="padding:1rem;background:{colors["bg_warning"]};border:1px solid {colors["accent_warning"]};border-radius:4px;color:{colors["accent_warning"]}">Unable to generate heatmap</div>',
+                f'<div style="padding:1rem;background:var(--amber-soft);border:1px solid #D97706;border-radius:4px;color:#D97706;">Unable to generate heatmap</div>',
                 unsafe_allow_html=True)
 
     # ── Detail columns ────────────────────────────────────────────────────
     LC, RC = st.columns([1.05, 1], gap="large")
 
     with LC:
-        st.markdown('<div class="sh">Descriptor Analysis</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-eyebrow">Descriptor Analysis</div>', unsafe_allow_html=True)
         mn = Path(rep.best_match_path).name if rep.best_match_path else "No match found"
         st.markdown(f"""
-        <div class="dr"><span class="dk">Best match</span><span class="dv">{mn}</span></div>
-        <div class="dr"><span class="dk">Descriptor similarity</span>
-             <span class="dv">{desc_sim:.4f}</span></div>
-        <div class="dr"><span class="dk">Risk classification</span>
-             <span class="dv {c_cls}" style="font-weight:600">{risk}</span></div>
-        <div class="dr"><span class="dk">Session ID</span>
-             <span class="dv" style="font-size:0.7rem">{rep.session_id}</span></div>
+        <div class="data-row"><span class="data-key">Best match</span><span class="data-value">{mn}</span></div>
+        <div class="data-row"><span class="data-key">Descriptor similarity</span>
+             <span class="data-value" style="color:{pct_col(desc_sim*100)};">{desc_sim:.4f}</span></div>
+        <div class="data-row"><span class="data-key">Risk classification</span>
+             <span class="data-value" style="color:{c_color};font-weight:600">{risk}</span></div>
+        <div class="data-row"><span class="data-key">Session ID</span>
+             <span class="data-value" style="font-size:0.7rem">{rep.session_id}</span></div>
         """, unsafe_allow_html=True)
 
         if rep.geometric:
             g = rep.geometric
-            st.markdown('<div class="sh">Geometric Consistency</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-eyebrow">Geometric Consistency</div>', unsafe_allow_html=True)
             st.markdown(f"""
-            <div class="dr"><span class="dk">Inlier count</span>
-                 <span class="dv">{g.inlier_count} keypoints</span></div>
-            <div class="dr"><span class="dk">Inlier ratio</span>
-                 <span class="dv">{g.inlier_ratio*100:.1f}%</span></div>
-            <div class="dr"><span class="dk">Reprojection error</span>
-                 <span class="dv">{g.reprojection_error:.2f} px</span></div>
-            <div class="dr"><span class="dk">Homography stability</span>
-                 <span class="dv">{g.homography_stability:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Inlier count</span>
+                 <span class="data-value">{g.inlier_count} keypoints</span></div>
+            <div class="data-row"><span class="data-key">Inlier ratio</span>
+                 <span class="data-value" style="color:{pct_col(g.inlier_ratio*100)};">{g.inlier_ratio*100:.1f}%</span></div>
+            <div class="data-row"><span class="data-key">Reprojection error</span>
+                 <span class="data-value">{g.reprojection_error:.2f} px</span></div>
+            <div class="data-row"><span class="data-key">Homography stability</span>
+                 <span class="data-value">{g.homography_stability:.4f}</span></div>
             """, unsafe_allow_html=True)
 
         if rep.tamper:
             t = rep.tamper
             zv = ", ".join(t.suspicious_quadrants) if t.suspicious_quadrants else "None"
-            st.markdown('<div class="sh">Tamper Analysis</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-eyebrow">Tamper Analysis</div>', unsafe_allow_html=True)
             st.markdown(f"""
-            <div class="dr"><span class="dk">Unmatched keypoints</span>
-                 <span class="dv">{t.unmatched_ratio*100:.1f}%</span></div>
-            <div class="dr"><span class="dk">Structural deviation</span>
-                 <span class="dv">{t.structural_deviation:.4f}</span></div>
-            <div class="dr"><span class="dk">Suspicious zones</span>
-                 <span class="dv">{zv}</span></div>
+            <div class="data-row"><span class="data-key">Unmatched keypoints</span>
+                 <span class="data-value">{t.unmatched_ratio*100:.1f}%</span></div>
+            <div class="data-row"><span class="data-key">Structural deviation</span>
+                 <span class="data-value">{t.structural_deviation:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Suspicious zones</span>
+                 <span class="data-value">{zv}</span></div>
             """, unsafe_allow_html=True)
 
         if rep.multiscale:
             m = rep.multiscale
-            st.markdown('<div class="sh">Multi-Scale Consistency</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-eyebrow">Multi-Scale Consistency</div>', unsafe_allow_html=True)
             st.markdown(f"""
-            <div class="dr"><span class="dk">Original</span><span class="dv">{m.original_score:.4f}</span></div>
-            <div class="dr"><span class="dk">Downscale (0.5x)</span><span class="dv">{m.downscale_score:.4f}</span></div>
-            <div class="dr"><span class="dk">Upscale (2x)</span><span class="dv">{m.upscale_score:.4f}</span></div>
-            <div class="dr"><span class="dk">Consistency score</span>
-                 <span class="dv">{m.consistency_score:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Original</span><span class="data-value">{m.original_score:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Downscale (0.5x)</span><span class="data-value">{m.downscale_score:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Upscale (2x)</span><span class="data-value">{m.upscale_score:.4f}</span></div>
+            <div class="data-row"><span class="data-key">Consistency score</span>
+                 <span class="data-value">{m.consistency_score:.4f}</span></div>
             """, unsafe_allow_html=True)
 
     with RC:
         if rep.anti_spoof:
             a = rep.anti_spoof
-            st.markdown('<div class="sh">Anti-Spoof Detection</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-eyebrow">Anti-Spoof Detection</div>', unsafe_allow_html=True)
             for lbl, sc in [
                 ("Moire Pattern",  a.moire_score),
                 ("Photocopy",      a.photocopy_score),
@@ -1196,7 +1122,7 @@ if "report" in st.session_state:
                 <div class="sb-row">
                   <span class="sb-lbl">{lbl}</span>
                   <div class="sb-bg"><div class="sb-fill"
-                    style="width:{pct:.1f}%;background:{fill}"></div></div>
+                    style="width:{pct:.1f}%;background:{fill};"></div></div>
                   <span class="sb-val">{pct:.1f}%</span>
                 </div>""", unsafe_allow_html=True)
             if a.flags:
@@ -1205,68 +1131,67 @@ if "report" in st.session_state:
                             unsafe_allow_html=True)
             else:
                 st.markdown(
-                    f'<div style="margin-top:0.7rem;font-size:0.8rem;color:{colors["accent_success"]}">No spoof flags triggered</div>',
+                    f'<div style="margin-top:0.7rem;font-size:0.8rem;color:#059669;">No spoof flags triggered</div>',
                     unsafe_allow_html=True)
 
         if rep.region_results:
-            st.markdown('<div class="sh">Region Verification</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-eyebrow">Region Verification</div>', unsafe_allow_html=True)
             rows = ""
             for rr in rep.region_results:
-                bc = {"VERIFIED":"bv","SUSPICIOUS":"bs","FAILED":"bf"}.get(rr.status,"bf")
-                rows += (f"<tr><td>{rr.name.replace('_',' ').title()}</td>"
-                         f"<td><span class='bdg {bc}'>{rr.status}</span></td>"
-                         f"<td>{rr.confidence*100:.1f}%</td>"
-                         f"<td>{rr.inlier_ratio*100:.1f}%</td>"
-                         f"<td>{rr.matched_keypoints}</td></tr>")
+                status_class = "status-verified" if rr.status == "VERIFIED" else "status-suspicious" if rr.status == "SUSPICIOUS" else "status-failed"
+                rows += f"<tr><td>{rr.name.replace('_',' ').title()}</td>"
+                rows += f"<td><span class='status-badge {status_class}'>{rr.status}</span></td>"
+                rows += f"<td>{rr.confidence*100:.1f}%</td>"
+                rows += f"<td>{rr.inlier_ratio*100:.1f}%</td>"
+                rows += f"<td>{rr.matched_keypoints}</td></tr>"
             st.markdown(f"""
-            <table class="rt">
-              <thead><tr><th>Zone</th><th>Status</th><th>Confidence</th>
-              <th>Inliers</th><th>Matches</th></tr></thead>
+            <table class="region-table">
+              <thead><tr><th>Zone</th><th>Status</th><th>Conf.</th><th>Inliers</th><th>Matches</th></tr></thead>
               <tbody>{rows}</tbody>
             </table>""", unsafe_allow_html=True)
 
-        st.markdown('<div class="sh">Integrity Fingerprint</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-eyebrow">Integrity Fingerprint</div>', unsafe_allow_html=True)
         fp = rep.fingerprint
         ts = datetime.datetime.fromtimestamp(fp.timestamp).strftime("%Y-%m-%d %H:%M:%S")
         st.markdown(f"""
-        <div class="dr"><span class="dk">Image SHA-256</span>
-             <span class="dv" style="font-size:0.7rem">{fp.image_sha256[:40]}...</span></div>
-        <div class="dr"><span class="dk">Descriptor hash</span>
-             <span class="dv" style="font-size:0.7rem">{fp.descriptor_hash[:40]}...</span></div>
-        <div class="dr"><span class="dk">Timestamp</span>
-             <span class="dv">{ts}</span></div>
+        <div class="data-row"><span class="data-key">Image SHA-256</span>
+             <span class="data-value" style="font-size:0.7rem">{fp.image_sha256[:40]}...</span></div>
+        <div class="data-row"><span class="data-key">Descriptor hash</span>
+             <span class="data-value" style="font-size:0.7rem">{fp.descriptor_hash[:40]}...</span></div>
+        <div class="data-row"><span class="data-key">Timestamp</span>
+             <span class="data-value">{ts}</span></div>
         """, unsafe_allow_html=True)
 
     # ── Audit record ──────────────────────────────────────────────────────
-    st.markdown('<div class="sh">Audit Record</div>', unsafe_allow_html=True)
-    with st.expander("View Full Audit Log", expanded=False):
+    st.markdown('<div class="section-eyebrow">Audit Record</div>', unsafe_allow_html=True)
+    with st.expander("View Full Audit Log"):
         if rep.audit_log_path and Path(rep.audit_log_path).exists():
             st.code(Path(rep.audit_log_path).read_text(), language="json")
         else:
             st.markdown(
-                f'<div style="font-size:0.8rem;color:{colors["text_muted"]}">Log not available</div>',
+                f'<div style="font-size:0.8rem;color:var(--text-tertiary);">Log not available</div>',
                 unsafe_allow_html=True)
 
     sig = rep.audit_signature
     if sig:
         st.markdown(f"""
-        <div class="ab">
-          <span class="ak">RSA-PSS-SHA256-4096</span><br>
-          <span class="as">{sig.get('rsa_signature','')[:96]}...</span><br><br>
-          <span class="ak">ECDSA-P384-SHA256</span><br>
-          <span class="as">{sig.get('ec_signature','')[:96]}...</span><br><br>
-          <span class="ak">Payload SHA-256</span>&nbsp;
-          <span class="av">{sig.get('payload_sha256','')}</span>
+        <div class="hash-block">
+          <span class="hash-label">RSA-PSS-SHA256-4096</span><br>
+          <span class="hash-value">{sig.get('rsa_signature','')[:96]}...</span><br><br>
+          <span class="hash-label">ECDSA-P384-SHA256</span><br>
+          <span class="hash-value">{sig.get('ec_signature','')[:96]}...</span><br><br>
+          <span class="hash-label">Payload SHA-256</span><br>
+          <span class="hash-value">{sig.get('payload_sha256','')}</span>
         </div>""", unsafe_allow_html=True)
     else:
         st.markdown(
-            f'<div style="font-size:0.8rem;color:{colors["text_muted"]};padding:0.5rem 0">'
+            f'<div style="font-size:0.8rem;color:var(--text-tertiary);padding:0.5rem 0">'
             'Log signing inactive — add key pairs to ./keys/ to enable.</div>',
             unsafe_allow_html=True)
 
     # ── Export ────────────────────────────────────────────────────────────
-    st.markdown('<div class="sh">Export</div>', unsafe_allow_html=True)
-    ex1, ex2, ex3, _ = st.columns([1, 1, 1, 2], gap="small")
+    st.markdown('<div class="section-eyebrow">Export</div>', unsafe_allow_html=True)
+    ex1, ex2, ex3 = st.columns(3, gap="small")
 
     try:
         from script_v2 import build_log_payload
@@ -1300,29 +1225,37 @@ if "report" in st.session_state:
                     mime="image/png", use_container_width=True)
 
     # Button to run a new verification
-    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("Run New Verification", use_container_width=False):
-        del st.session_state["report"]
-        del st.session_state["q_path"]
-        del st.session_state["elapsed"]
+        st.session_state["report"] = None
+        st.session_state["q_path"] = None
+        st.session_state["elapsed"] = None
         st.rerun()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Empty state
 # ─────────────────────────────────────────────────────────────────────────────
-elif not run_btn:
+elif st.session_state["report"] is None and not run_btn:
     st.markdown(f"""
     <div style="display:flex;flex-direction:column;align-items:center;
                 justify-content:center;padding:5rem 2rem;
-                border:1px dashed {colors['border']};border-radius:6px;margin-top:0.5rem">
-      <div style="font-weight:600;font-size:1rem;color:{colors['text_muted']};margin-bottom:0.75rem">
+                border:1px dashed var(--border-light);border-radius:6px;margin-top:0.5rem;">
+      <div style="font-weight:600;font-size:1rem;color:var(--text-tertiary);margin-bottom:0.75rem;">
         No Verification in Progress
       </div>
-      <div style="font-size:0.85rem;color:{colors['text_secondary']};text-align:center;
-                  max-width:450px;line-height:1.8">
+      <div style="font-size:0.85rem;color:var(--text-secondary);text-align:center;
+                  max-width:450px;line-height:1.8;">
         Upload reference images in the sidebar, upload a query document above,
         then click <strong>Run Verification</strong> to execute the complete
         10-layer forensic analysis pipeline.
       </div>
     </div>""", unsafe_allow_html=True)
+
+# ── Footer ──
+st.markdown("---")
+st.markdown("""
+<div style="text-align:center;font-size:0.7rem;font-weight:600;text-transform:uppercase;
+            letter-spacing:0.06em;color:var(--text-tertiary);">
+    Forensic ID Authentication Engine
+</div>""", unsafe_allow_html=True)
