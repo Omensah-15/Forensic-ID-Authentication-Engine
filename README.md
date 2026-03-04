@@ -39,24 +39,6 @@ The engine is composed of ten verification layers that execute sequentially on e
 
 ---
 
-## Demo Output
-
-**Query image — `query_030.png`**
-
-![Query image](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/e2bba3fdf564d8adfc6a72358ddf824b31dc17e7/asset/query_030.png)
-
-**Reference image — `pattern_014.png`**
-
-![Reference image](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/5055cf5cd07158ef9015961ed9189ebf63c6a9f4/asset/pattern_014.png)
-
-**Verification result**
-
-![Result](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/9ef8d762412fc8830cf38fc21126b41aec2eed90/asset/Screenshot%202025-08-21%20162010.png)
-
-The result displays the SuperPoint match visualisation between `query_030.png` and `pattern_014.png`. Coloured lines connect reciprocal keypoint matches across both images. The density and spatial distribution of matches across the full image surface, combined with a similarity score of 1.000, confirms a structurally authentic match. A genuine counterfeit would show sparse, geometrically inconsistent matches and a collapsed inlier ratio under RANSAC.
-
----
-   
 ## 👨‍💻 Author
 
 **Developed by Mensah Obed**
