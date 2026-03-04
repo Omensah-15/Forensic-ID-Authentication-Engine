@@ -41,8 +41,6 @@ The engine is composed of ten verification layers that execute sequentially on e
 
 ## Demo Output
 
-See [`notebook.ipynb`](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/aafee20046f3ec26850acc9f83f4d285b56b78ba/notebook.ipynb) for a full walkthrough.
-
 **Query image — `query_030.png`**
 
 ![Query image](https://github.com/Omensah-15/Image-Based-Anti-Counterfeit-Detection-with-SuperPoint/blob/e2bba3fdf564d8adfc6a72358ddf824b31dc17e7/asset/query_030.png)
