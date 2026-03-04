@@ -1,12 +1,5 @@
 """
-SuperPoint Forensic Verification Engine — Enterprise Edition
-=============================================================
-Adds four production modules on top of the base forensic pipeline:
-
-  Module A  Digital signature of audit logs (RSA-PSS + ECDSA)
-  Module B  Secure, hash-chained append-only audit storage
-  Module C  Anti-spoof detection (Moiré, photocopy, screen-replay, print-scan)
-  Module D  Confidence calibration via ROC / isotonic regression
+SuperPoint Forensic Verification Engine
 """
 
 import os, hashlib, time, json, uuid, logging, math, struct
