@@ -98,7 +98,7 @@ LogSigner.generate_keys("./keys")
 **4. Launch the interface**
 
 ```bash
-streamlit run demo_app.py
+streamlit run app.py
 ```
 
 ---
