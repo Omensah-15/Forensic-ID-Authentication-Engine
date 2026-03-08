@@ -204,8 +204,7 @@ project/
 
 ---
 
-## 👨‍💻 Author
+## Author
 
-**Mensah Obed**  
-[heavenzlebron7@gmail.com](mailto:heavenzlebron7@gmail.com)  
-[linkedin.com/in/obed-mensah-87001237b](https://www.linkedin.com/in/obed-mensah-87001237b)
+**Mensah Obed**
+[Email](mailto:heavenzlebron7@gmail.com) · [LinkedIn](https://www.linkedin.com/in/obed-mensah-87001237b)
