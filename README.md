@@ -19,6 +19,14 @@ The system extracts keypoints from query images, validates geometric consistency
 ```
 ---
 
+## Demo
+
+<div align="center">
+  <img src="https://github.com/Omensah-15/TropiCare_/raw/ff7db26f79df2122a79a1f1cc54e2e9bd108abcf/assets/demovid.gif" alt="Demo" width="800">
+</div>
+
+---
+
 ## Architecture Overview
 
 The engine executes fifteen verification layers sequentially on every query:
