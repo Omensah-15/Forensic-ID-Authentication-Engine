@@ -26,7 +26,7 @@ The system extracts keypoints from query images, validates geometric consistency
 </div>
 
 <div align="center">
-  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/7cd592077b7bdfd28f1c4d668d32120facd58c8e/asset/forensicdemo.gif" alt="Demo" width="800">
+  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/bb1d54509cbdabe199297303c0d9b533fd1ce1bc/asset/forensicdemo2.gif" alt="Demo" width="800">
 </div>
 
 ---
