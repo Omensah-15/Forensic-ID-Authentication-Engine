@@ -4,19 +4,6 @@ A production grade forensic image verification system built on the SuperPoint de
 
 The system extracts keypoints from query images, validates geometric consistency against a trusted reference database, and applies anti-spoof analysis, multi-scale verification, and region-based zone inspection to produce a statistically calibrated fraud probability with a structured chain-of-custody audit log.
 
-**How it works:**
-```bash
-1. Extract document fingerprints using AI
-2. Compare against known genuine documents
-3. Check if the geometry makes sense
-4. Detect suspicious modified areas
-5. Test robustness at different scales
-6. Verify sensitive regions independently
-7. Detect spoof attacks and recaptures
-8. Compute fraud probability
-9. Calibrate confidence statistically
-10. Cryptographically secure the audit trail
-```
 ---
 
 ## Demo
