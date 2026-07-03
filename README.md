@@ -215,7 +215,7 @@ else:
 ```
 project/
     script_v3.py          Core verification engine (15 layers)
-    demo_app.py           Streamlit interface
+    app.py           Streamlit interface
     requirements.txt      Python dependencies
     database/             Reference document images
     audit_logs/           Per-session signed JSON audit logs
