@@ -1,12 +1,6 @@
 """
-Forensic Document Verification — Demo Interface
-=================================================
+Forensic Document Verification — Streamlit Interface
 
-
-Run:
-    streamlit run app.py
-
-Requires script_v3.py in the same directory.
 """
 
 from __future__ import annotations
