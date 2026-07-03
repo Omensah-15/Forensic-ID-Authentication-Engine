@@ -230,11 +230,11 @@ project/
 
 ## Limitations
 
-- Operates on grayscale image data only; colour channels are not used in matching
-- Requires a pre-built reference database of genuine documents
-- Anti-spoof signals are signal-processing heuristics and may be circumvented by an adversary with knowledge of the detection methods
-- No built-in regulatory compliance; not a substitute for certified identity verification systems
-
+- Operates on grayscale image data only; colour channels are not used during feature matching.
+- Requires a pre-built reference database of trusted genuine documents for verification.
+- Anti-spoof detection relies on signal-processing heuristics and may be evaded by sophisticated adversaries.
+- Not a substitute for certified identity verification systems or regulatory compliance requirements.
+  
 ---
 
 ## Author
