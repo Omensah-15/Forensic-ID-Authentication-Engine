@@ -111,7 +111,7 @@ Create a `database/` directory in the project root and add genuine reference doc
 
 ```
 project/
-    demo_app.py
+    app.py
     script_v3.py
     superpoint_v1.pth
     requirements.txt
