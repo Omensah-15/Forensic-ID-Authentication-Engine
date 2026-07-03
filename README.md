@@ -21,16 +21,32 @@ The system extracts keypoints from query images, validates geometric consistency
 
 ## Demo
 
-<div align="center">
-  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/7cd592077b7bdfd28f1c4d668d32120facd58c8e/asset/forensicdemo.gif" alt="Demo" width="800">
-</div>
+### ✅ Authentic Document Verification
+
+The uploaded identity document is successfully matched against the trusted reference database. The engine verifies structural consistency, authenticates the document, and generates a forensic report with confidence scores and a cryptographically signed audit record.
 
 <div align="center">
-  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/bb1d54509cbdabe199297303c0d9b533fd1ce1bc/asset/forensicdemo2.gif" alt="Demo" width="800">
+  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/7cd592077b7bdfd28f1c4d668d32120facd58c8e/asset/forensicdemo.gif" alt="Authentic document verification demo" width="800">
 </div>
 
+---
+
+### ⚠️ Suspicious Document — Manual Review Recommended
+
+The uploaded document shares similarities with trusted records but exhibits forensic anomalies during analysis. Based on the verification results, the system recommends **Manual Review**, allowing investigators to inspect the evidence before making a final authentication decision.
+
 <div align="center">
-  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/c366c51d49089e154d7041ec98d9300dccd58262/asset/forensicdemo3.gif" alt="Demo" width="800">
+  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/bb1d54509cbdabe199297303c0d9b533fd1ce1bc/asset/forensicdemo2.gif" alt="Manual review recommended demo" width="800">
+</div>
+
+---
+
+### 🚨 Fraud Detected
+
+The uploaded document cannot be matched to any trusted document in the reference database. After completing its forensic analysis, the engine classifies the document as **Potential Fraud**, assigns a high fraud probability, and records the verification in a cryptographically signed audit log for traceability.
+
+<div align="center">
+  <img src="https://github.com/Omensah-15/Forensic-ID-Authentication-Engine/blob/c366c51d49089e154d7041ec98d9300dccd58262/asset/forensicdemo3.gif" alt="Fraud detection demo" width="800">
 </div>
 
 ---
