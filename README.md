@@ -1,4 +1,4 @@
-# Forensic ID Authentication Engine
+# 🧬 Forensic ID Authentication Engine
 
 A production grade forensic image verification system built on the SuperPoint deep learning architecture. The engine performs multi-layer structural analysis of identity documents and security patterns to detect counterfeits, localise tampering, and produce cryptographically signed audit records.
 
