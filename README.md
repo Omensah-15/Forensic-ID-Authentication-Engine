@@ -89,6 +89,7 @@ streamlit>=1.28.0
 Pillow>=9.0.0
 cryptography>=41.0.0
 scikit-learn>=1.2.0
+plotly>=5.18.0
 ```
 
 Install dependencies:
